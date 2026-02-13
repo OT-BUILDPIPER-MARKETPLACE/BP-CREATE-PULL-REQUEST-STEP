@@ -78,6 +78,7 @@ done < <(jq -c '
     .manifest_meta_data.helm_git_repo.credential
   end
 ' "$JSON_FILE")
+}
 
 check_branch() {
   COUNT=$(git ls-remote https://$SCM_USERNAME:$SCM_PASSWORD@$SCM_URL $BRANCH 2>/dev/null | wc -l)
