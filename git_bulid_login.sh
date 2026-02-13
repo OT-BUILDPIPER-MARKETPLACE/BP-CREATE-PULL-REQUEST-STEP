@@ -5,7 +5,7 @@ source /opt/buildpiper/shell-functions/log-functions.sh
 source /opt/buildpiper/shell-functions/str-functions.sh
 source /opt/buildpiper/shell-functions/file-functions.sh
 
-login_scm() {
+build_login_scm() {
   local JSON_FILE="/bp/data/environment_build"
 
   [[ -f "$JSON_FILE" ]] || { logErrorMessage "JSON file not found"; return 1; }
@@ -14,6 +14,20 @@ login_scm() {
   SCM_URL=$(jq -r '.git_repo.git_url | sub("^https?://"; "")' "$JSON_FILE")
   SCM_PROJECT=$(echo "$SCM_URL" | cut -d'/' -f2)
   BRANCH=$(jq -r '.git_repo.branch_name' "$JSON_FILE")
+  if [[ -z "$SCM_URL" || "$SCM_URL" == "null" ]]; then
+  logErrorMessage "git_url not found in JSON"
+  exit 1
+  fi
+
+  if [[ -z "$BRANCH" || "$BRANCH" == "null" ]]; then
+    logErrorMessage "branch_name not found in JSON"
+    exit 1
+  fi
+
+  if [[ -z "$SCM_PROJECT" || "$SCM_PROJECT" == "null" ]]; then
+    logErrorMessage "SCM_PROJECT could not be derived"
+    exit 1
+  fi
 
   while read -r cred; do
 
