@@ -13,7 +13,7 @@ deploy_login_scm() {
 
 
   SCM_URL=$(jq -r '.manifest_meta_data.helm_git_repo.git_url | sub("^https?://"; "")'  "$JSON_FILE")
-  BRANCH=$(jq -r '.manifest_meta_data.helm_git_repo.branch_name' data.json)
+  BRANCH=$(jq -r '.manifest_meta_data.helm_git_repo.branch_name' "$JSON_FILE")
   SCM_PROJECT=$(echo "$SCM_URL" | cut -d'/' -f2)
 
   if [[ -z "$SCM_URL" || "$SCM_URL" == "null" ]]; then
