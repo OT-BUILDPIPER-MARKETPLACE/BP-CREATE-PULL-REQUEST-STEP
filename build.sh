@@ -42,7 +42,7 @@ PR_TITLE="CI: Merge release $SOURCE_BRANCH into $DEST_BRANCH from BUILDPIPER"
 PR_DESC="Automated PR from pipeline"
 
 # reviewers as comma-separated usernames
-REVIEWERS=""
+REVIEWERS="${USERNAME}"
 
 # Print the variables
 logInfoMessage "REPO_OWNER: ${SCM_USERNAME}"
