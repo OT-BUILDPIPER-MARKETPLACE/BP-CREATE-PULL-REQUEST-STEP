@@ -86,7 +86,6 @@ detect_scm
   #PR_ID=$(echo "$RESPONSE" | jq -r '.number // empty')
 
 
-
 elif [ "$SCM_TYPE" = "bitbucket" ]; then
   logInfoMessage "push the status message on bitbucket"
 RESPONSE=$(curl -s -X POST -u "${SCM_USERNAME}:${SCM_PASSWORD}" \

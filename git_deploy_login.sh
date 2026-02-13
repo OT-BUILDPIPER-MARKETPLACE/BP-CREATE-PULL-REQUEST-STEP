@@ -88,6 +88,7 @@ check_branch() {
     logInfoMessage "Branch '$BRANCH' exists and credentials are valid"
     logInfoMessage "-------------------------------------------------"
     return 0
+    
   else
     logErrorMessage "---------------------------------------------------------"
     logErrorMessage "Either branch '$BRANCH' not found or credentials invalid"

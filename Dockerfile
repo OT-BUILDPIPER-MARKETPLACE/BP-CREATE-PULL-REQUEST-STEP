@@ -28,7 +28,6 @@ RUN groupadd -g 65522 buildpiper && \
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-
 ENV DNS_URL=""
 ENV ACTIVITY_SUB_TASK_CODE=""
 
