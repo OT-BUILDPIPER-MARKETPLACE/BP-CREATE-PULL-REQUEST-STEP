@@ -64,6 +64,31 @@ for u in "${USERS[@]}"; do
 done
 REVIEWER_JSON="[${REVIEWER_JSON%,}]"
 
+detect_scm() {
+  if [[ "$SCM_URL" == *"github.com"* ]]; then
+    SCM_TYPE="github"
+  elif [[ "$SCM_URL" == *"bitbucket.org"* ]]; then
+    SCM_TYPE="bitbucket"
+  else
+    logErrorMessage "Unable to detect SCM from SCM_URL=$SCM_URL"
+    exit 1
+  fi
+  logInfoMessage "Detected SCM: $SCM_TYPE"
+}
+
+detect_scm
+
+  if [ "$SCM_TYPE" = "github" ]; then 
+  logInfoMessage "push the status message on github"
+  logWarningMessage "GitHub PR creation is currently under development."
+  exit 1
+
+  #PR_ID=$(echo "$RESPONSE" | jq -r '.number // empty')
+
+
+
+elif [ "$SCM_TYPE" = "bitbucket" ]; then
+  logInfoMessage "push the status message on bitbucket"
 RESPONSE=$(curl -s -X POST -u "${SCM_USERNAME}:${SCM_PASSWORD}" \
 https://api.bitbucket.org/2.0/repositories/$SCM_PROJECT/$REPO_NAME/pullrequests \
 -H "Content-Type: application/json" \
@@ -75,8 +100,9 @@ https://api.bitbucket.org/2.0/repositories/$SCM_PROJECT/$REPO_NAME/pullrequests 
   \"reviewers\": $REVIEWER_JSON
 }")
 
-
 PR_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
+
+fi
 
 if [[ -n "$PR_ID" ]]; then
   logInfoMessage "Pull Request created successfully (PR ID: $PR_ID)"
@@ -85,5 +111,6 @@ else
   logErrorMessage "$RESPONSE"
   exit 1
 fi
+
 
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
