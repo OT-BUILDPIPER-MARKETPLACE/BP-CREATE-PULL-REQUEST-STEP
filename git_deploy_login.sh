@@ -40,12 +40,12 @@ while read -r cred; do
 
   # Validate
   if [[ -z "$ENC_USER" || "$ENC_USER" == "null" ]]; then
-    echo "ERROR: username not found in credential"
+    logErrorMessage "Username not found in credential"
     exit 1
   fi
 
   if [[ -z "$ENC_PASS" || "$ENC_PASS" == "null" ]]; then
-    echo "ERROR: password not found in credential"
+    logErrorMessage "Password not found in credential"
     exit 1
   fi
 
