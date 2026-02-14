@@ -34,8 +34,8 @@ ENV ACTIVITY_SUB_TASK_CODE=""
 WORKDIR /home/buildpiper/app
 
 COPY --chown=buildpiper:buildpiper build.sh .
-COPY --chown=buildpiper:buildpiper git_bulid_login .
-COPY --chown=buildpiper:buildpiper git_deploy_login .
+COPY --chown=buildpiper:buildpiper git_bulid_login.sh .
+COPY --chown=buildpiper:buildpiper git_deploy_login.sh .
 COPY --chown=buildpiper:buildpiper BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
 
 RUN chmod +x build.sh
