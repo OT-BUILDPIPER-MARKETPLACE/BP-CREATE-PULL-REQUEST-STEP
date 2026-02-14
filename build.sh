@@ -2,7 +2,7 @@
 source /opt/buildpiper/shell-functions/file-functions.sh
 source /opt/buildpiper/shell-functions/log-functions.sh
 source /opt/buildpiper/shell-functions/functions.sh
-source ./git_build_login.sh
+source ./git_bulid_login.sh
 source ./git_deploy_login.sh
 
 if [ "$DEBUG" = true ]; then
