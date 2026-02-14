@@ -78,8 +78,8 @@ detect_scm() {
 
 detect_scm
 
-  if [ "$SCM_TYPE" = "github" ]; then 
-  logInfoMessage "push the status message on github"
+if [ "$SCM_TYPE" = "github" ]; then 
+  logInfoMessage "Creating pull request in GitHub from $SOURCE_BRANCH to $DEST_BRANCH"
   logWarningMessage "GitHub PR creation is currently under development."
   exit 1
 
@@ -87,7 +87,7 @@ detect_scm
 
 
 elif [ "$SCM_TYPE" = "bitbucket" ]; then
-  logInfoMessage "push the status message on bitbucket"
+logInfoMessage "Creating pull request in Bitbucket from $SOURCE_BRANCH to $DEST_BRANCH"
 RESPONSE=$(curl -s -X POST -u "${SCM_USERNAME}:${SCM_PASSWORD}" \
 https://api.bitbucket.org/2.0/repositories/$SCM_PROJECT/$REPO_NAME/pullrequests \
 -H "Content-Type: application/json" \
