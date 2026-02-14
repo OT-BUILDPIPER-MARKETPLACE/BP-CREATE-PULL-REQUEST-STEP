@@ -30,6 +30,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 ENV DNS_URL=""
 ENV ACTIVITY_SUB_TASK_CODE=""
+ENV SLEEP_DURATION="5s"
 
 WORKDIR /home/buildpiper/app
 
