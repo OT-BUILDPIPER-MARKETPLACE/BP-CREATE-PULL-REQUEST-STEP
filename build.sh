@@ -13,21 +13,44 @@ TASK_STATUS=0
 CODEBASE_LOCATION="${WORKSPACE}"/"${CODEBASE_DIR}"
 logInfoMessage "I'll do processing at [$CODEBASE_LOCATION]"
 sleep  $SLEEP_DURATION
-cd  "${CODEBASE_LOCATION}"
+cd  "${CODEBASE_LOCATION}" || {
+    logErrorMessage "Failed to navigate to workspace: ${CODEBASE_LOCATION}"
+    add_event "WORKSPACE NAVIGATION" "Failed" \
+          "Failed to navigate to workspace" \
+          "Path: ${CODEBASE_LOCATION}"
+    exit 1
+}
+
+add_event "WORKSPACE NAVIGATION" "Successful" \
+      "Successfully navigated to workspace" \
+      "Path: ${CODEBASE_LOCATION}"
+
+add_event "INITIALIZATION" "Successful" \
+      "Task initialization completed" \
+      "Repository Location: ${CODEBASE_LOCATION}"
 
 case "$ACTION" in
   build)
     logInfoMessage "Selected action: $ACTION"
     logInfoMessage "login to SCM"
     build_login_scm
+    add_event "SCM LOGIN" "Successful" \
+          "Successfully logged into SCM" \
+          "Action: build"
     ;;
   deploy)
     logInfoMessage "Selected action: $ACTION"
     logInfoMessage "login to SCM"
     deploy_login_scm
+    add_event "SCM LOGIN" "Successful" \
+          "Successfully logged into SCM" \
+          "Action: deploy"
     ;;
   *)
     logErrorMessage "Usage: ACTION must be {build|deploy}"
+    add_event "INITIALIZATION" "Failed" \
+          "Invalid ACTION provided" \
+          "Usage: ACTION must be {build|deploy}"
     exit 1
     ;;
 esac
@@ -70,9 +93,15 @@ detect_scm() {
     SCM_TYPE="bitbucket"
   else
     logErrorMessage "Unable to detect SCM from SCM_URL=$SCM_URL"
+    add_event "SCM DETECTION" "Failed" \
+          "Unable to detect SCM provider" \
+          "SCM_URL: ${SCM_URL}"
     exit 1
   fi
   logInfoMessage "Detected SCM: $SCM_TYPE"
+  add_event "SCM DETECTION" "Successful" \
+        "Detected SCM provider" \
+        "SCM Provider: ${SCM_TYPE}"
 }
 
 detect_scm
@@ -80,6 +109,9 @@ detect_scm
 if [ "$SCM_TYPE" = "github" ]; then 
   logInfoMessage "Creating pull request in GitHub from $SOURCE_BRANCH to $DEST_BRANCH"
   logWarningMessage "GitHub PR creation is currently under development."
+  add_event "PR CREATION" "Failed" \
+        "GitHub PR creation not yet implemented" \
+        "Task supports Bitbucket only at this stage"
   exit 1
 
   #PR_ID=$(echo "$RESPONSE" | jq -r '.number // empty')
@@ -104,11 +136,20 @@ fi
 
 if [[ -n "$PR_ID" ]]; then
   logInfoMessage "Pull Request created successfully (PR ID: $PR_ID)"
+  add_event "PR CREATION" "Successful" \
+        "Pull Request created successfully" \
+        "PR ID: $PR_ID | From $SOURCE_BRANCH to $DEST_BRANCH"
 else
   logErrorMessage "Failed to create Pull Request"
   logErrorMessage "$RESPONSE"
+  add_event "PR CREATION" "Failed" \
+        "Failed to create Pull Request" \
+        "Response: $RESPONSE"
   exit 1
 fi
 
 
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
+add_event "TASK EXECUTION" "Successful" \
+      "PR Creation task completed" \
+      "Pull Request processed successfully on ${SCM_TYPE}"
