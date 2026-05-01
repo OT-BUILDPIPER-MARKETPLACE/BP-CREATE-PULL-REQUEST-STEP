@@ -32,23 +32,39 @@ add_event "INITIALIZATION" "Successful" \
 case "$ACTION" in
   build)
     logInfoMessage "Selected action: $ACTION"
+    add_event "ACTION VALIDATION" "Successful" \
+          "Valid action selected" \
+          "Action: build"
     logInfoMessage "login to SCM"
-    build_login_scm
+    if ! build_login_scm; then
+      add_event "SCM LOGIN" "Failed" \
+            "Failed to login to SCM" \
+            "Action: build"
+      exit 1
+    fi
     add_event "SCM LOGIN" "Successful" \
           "Successfully logged into SCM" \
           "Action: build"
     ;;
   deploy)
     logInfoMessage "Selected action: $ACTION"
+    add_event "ACTION VALIDATION" "Successful" \
+          "Valid action selected" \
+          "Action: deploy"
     logInfoMessage "login to SCM"
-    deploy_login_scm
+    if ! deploy_login_scm; then
+      add_event "SCM LOGIN" "Failed" \
+            "Failed to login to SCM" \
+            "Action: deploy"
+      exit 1
+    fi
     add_event "SCM LOGIN" "Successful" \
           "Successfully logged into SCM" \
           "Action: deploy"
     ;;
   *)
     logErrorMessage "Usage: ACTION must be {build|deploy}"
-    add_event "INITIALIZATION" "Failed" \
+    add_event "ACTION VALIDATION" "Failed" \
           "Invalid ACTION provided" \
           "Usage: ACTION must be {build|deploy}"
     exit 1
