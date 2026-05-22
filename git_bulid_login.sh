@@ -35,17 +35,19 @@ build_login_scm() {
     ENC_USER=$(jq -r '.username' <<<"$cred")
     ENC_PASS=$(jq -r '.password' <<<"$cred")
 
-    SCM_USERNAME=$(python3 - <<PY
+    SCM_USERNAME=$(BP_ENC_TOKEN="$ENC_USER" python3 - <<'PY'
 from cryptography.fernet import Fernet
 import os
-print(Fernet(os.environ["FERNET_KEY"].encode()).decrypt(b"$ENC_USER").decode())
+token = os.environ["BP_ENC_TOKEN"].encode()
+print(Fernet(os.environ["FERNET_KEY"].encode()).decrypt(token).decode())
 PY
 )
 
-    SCM_PASSWORD=$(python3 - <<PY
+    SCM_PASSWORD=$(BP_ENC_TOKEN="$ENC_PASS" python3 - <<'PY'
 from cryptography.fernet import Fernet
 import os
-print(Fernet(os.environ["FERNET_KEY"].encode()).decrypt(b"$ENC_PASS").decode())
+token = os.environ["BP_ENC_TOKEN"].encode()
+print(Fernet(os.environ["FERNET_KEY"].encode()).decrypt(token).decode())
 PY
 )
 

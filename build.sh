@@ -200,12 +200,20 @@ add_event "PR_CREATION_START" "Successful" \
     "Source: ${SOURCE_BRANCH} → Dest: ${DEST_BRANCH} | SCM: ${SCM_TYPE}"
 
 if [ "$SCM_TYPE" = "github" ]; then
-    logWarningMessage "> GitHub PR creation is currently under development"
-    add_event "PR_CREATION_RESULT" "Failed" \
-        "GitHub PR creation is not yet implemented" \
-        "This step currently supports Bitbucket only"
-    saveTaskStatus 1 "${ACTIVITY_SUB_TASK_CODE}"
-    exit 1
+    # Extract owner from SCM_URL: e.g. github.com/deepakgupta97/emp_project.git → deepakgupta97
+    REPO_OWNER=$(echo "$SCM_URL" | cut -d'/' -f2)
+    logInfoMessage "> Creating pull request in GitHub: ${SOURCE_BRANCH} → ${DEST_BRANCH}"
+    RESPONSE=$(curl -s -X POST \
+        -H "Authorization: token ${SCM_PASSWORD}" \
+        -H "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/pulls" \
+        -d "{
+            \"title\": \"${PR_TITLE}\",
+            \"body\": \"${PR_DESC}\\n\\nBUILDPIPER Logs: ${TARGET_URL}\",
+            \"head\": \"${SOURCE_BRANCH}\",
+            \"base\": \"${DEST_BRANCH}\"
+        }")
+    PR_ID=$(echo "$RESPONSE" | jq -r '.number // empty')
 
 elif [ "$SCM_TYPE" = "bitbucket" ]; then
     logInfoMessage "> Creating pull request in Bitbucket: ${SOURCE_BRANCH} → ${DEST_BRANCH}"
