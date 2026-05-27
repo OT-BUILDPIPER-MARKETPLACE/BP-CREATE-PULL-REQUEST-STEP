@@ -215,6 +215,22 @@ if [ "$SCM_TYPE" = "github" ]; then
         }")
     PR_ID=$(echo "$RESPONSE" | jq -r '.number // empty')
 
+    if [[ -z "$PR_ID" ]]; then
+        # Check if the failure is because the pull request already exists
+        if echo "$RESPONSE" | jq -e '.errors[0].message | contains("already exists")' >/dev/null 2>&1; then
+            logInfoMessage "> Pull Request already exists. Querying GitHub for the existing PR ID..."
+            LOOKUP_RESPONSE=$(curl -s \
+                -H "Authorization: token ${SCM_PASSWORD}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/pulls?head=${REPO_OWNER}:${SOURCE_BRANCH}&base=${DEST_BRANCH}&state=open")
+            PR_ID=$(echo "$LOOKUP_RESPONSE" | jq -r '.[0].number // empty')
+            if [[ -n "$PR_ID" ]]; then
+                logInfoMessage "> Existing Pull Request found: #${PR_ID}"
+                PR_ALREADY_EXISTS="true"
+            fi
+        fi
+    fi
+
 elif [ "$SCM_TYPE" = "bitbucket" ]; then
     logInfoMessage "> Creating pull request in Bitbucket: ${SOURCE_BRANCH} → ${DEST_BRANCH}"
     RESPONSE=$(curl -s -X POST \
@@ -236,10 +252,17 @@ fi
 # 9. PR Result Evaluation
 # ---------------------------------------------------------------
 if [[ -n "$PR_ID" ]]; then
-    logInfoMessage "> Pull Request created successfully — PR ID: ${PR_ID}"
-    add_event "PR_CREATION_RESULT" "Successful" \
-        "Pull Request created successfully" \
-        "PR ID: ${PR_ID} | Source: ${SOURCE_BRANCH} → Dest: ${DEST_BRANCH} | SCM: ${SCM_TYPE}"
+    if [[ "$PR_ALREADY_EXISTS" == "true" ]]; then
+        logInfoMessage "> Pull Request already exists — PR ID: ${PR_ID}"
+        add_event "PR_CREATION_RESULT" "Successful" \
+            "Pull Request already exists" \
+            "PR ID: ${PR_ID} | Source: ${SOURCE_BRANCH} → Dest: ${DEST_BRANCH} | SCM: ${SCM_TYPE}"
+    else
+        logInfoMessage "> Pull Request created successfully — PR ID: ${PR_ID}"
+        add_event "PR_CREATION_RESULT" "Successful" \
+            "Pull Request created successfully" \
+            "PR ID: ${PR_ID} | Source: ${SOURCE_BRANCH} → Dest: ${DEST_BRANCH} | SCM: ${SCM_TYPE}"
+    fi
     saveTaskStatus 0 "${ACTIVITY_SUB_TASK_CODE}"
     exit 0
 else
